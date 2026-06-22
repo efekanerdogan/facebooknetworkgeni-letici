@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oto Arkadaş Ekleme Kurulumu | Premium</title>
+    <link rel="icon" href="https://efekanerdogan.com/images/logo.png" type="image/png">
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- TAILWIND CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- TAILWIND CONFIG -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        fb: {
+                            blue: '#1877f2',
+                            hover: '#166fe5',
+                            dark: '#18191a',
+                            card: '#242526',
+                            border: '#3e4042',
+                            text: '#e4e6eb',
+                            muted: '#b0b3b8'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'march': 'march 20s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 1, boxShadow: '0 0 20px -5px rgba(24, 119, 242, 0.4)' },
+                            '50%': { opacity: .7, boxShadow: '0 0 30px 5px rgba(24, 119, 242, 0.6)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: 0, transform: 'translateY(20px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        march: {
+                            'to': { strokeDashoffset: '-400' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- CUSTOM CSS -->
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(24, 119, 242, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #e4e6eb;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-step {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .glass-step:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(24, 119, 242, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px -3px rgba(24, 119, 242, 0.15);
+        }
+
+        /* Draggable Pill SVG Border Animation */
+        .draggable-pill-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: grab;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .draggable-pill-wrapper:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .draggable-svg-border {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            border-radius: 9999px;
+        }
+
+        .draggable-svg-border rect {
+            width: 100%; height: 100%;
+            fill: none;
+            stroke: #3b82f6;
+            stroke-width: 2;
+            stroke-dasharray: 10 10;
+            stroke-dashoffset: 0;
+            rx: 50px; /* high border radius for pill */
+            animation: march 20s linear infinite;
+        }
+
+        .draggable-pill-wrapper:hover .draggable-svg-border rect {
+            stroke: #60a5fa;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Toast Animation */
+        #toast {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center py-10 px-4 sm:px-6">
+
+    <div class="w-full max-w-4xl mx-auto flex flex-col items-center justify-center gap-8 animate-slide-up">
+        
+        <!-- Header / Logo -->
+        <div class="text-center space-y-4 animate-float">
+            <a href="https://efekanerdogan.com" target="_blank" class="inline-block relative group">
+                <div class="absolute -inset-2 bg-gradient-to-r from-fb-blue to-purple-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                <img src="https://efekanerdogan.com/images/logo.png" alt="Efekan Erdogan Logo" 
+                     class="relative h-16 sm:h-20 w-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-105"
+                     onerror="this.src='https://placehold.co/300x100/1e293b/3b82f6?text=FB+Network+Araçları'">
+            </a>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
+                    Facebook Network Genişletici
+                </h1>
+                <p class="text-fb-muted mt-2 font-medium tracking-wide text-sm sm:text-base">
+                    Otomatik Arkadaş Ekleme Aracı Kurulumu
+                </p>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] w-full p-6 sm:p-10 lg:p-12">
+            
+            <!-- SECTION 1: Drag & Drop (Recommended) -->
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-[0.2em] mb-8">
+                    <svg class="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+                    KOLAY YÖNTEM (ÖNERİLEN)
+                </div>
+                
+                <div class="flex flex-col items-center justify-center space-y-6">
+                    
+                    <!-- Draggable Pill -->
+                    <div class="draggable-pill-wrapper group">
+                        <svg class="draggable-svg-border" xmlns="http://www.w3.org/2000/svg">
+                            <rect />
+                        </svg>
+                        <a id="bookmarklet-btn" 
+                           href="javascript:(function(){if(document.getElementById('bm-panel'))return;var ui=document.createElement('div');ui.id='bm-panel';ui.innerHTML='<div style=\'position:fixed;top:20px;right:20px;background:rgba(30,41,59,0.95);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);color:#e4e6eb;padding:20px;border-radius:16px;z-index:999999;box-shadow:0 8px 32px rgba(0,0,0,0.5);width:280px;font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Roboto,Helvetica,Arial,sans-serif;border:1px solid rgba(255,255,255,0.1);box-sizing:border-box;\'><h3 style=\'margin:0 0 15px 0;text-align:center;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px;font-weight:600;letter-spacing:0.5px;cursor:grab;color:#ffffff !important;text-shadow:0 1px 3px rgba(0,0,0,0.5);\' title=\'Paneli sürüklemek için basılı tutun\'>🦊 FB Network Genişletici</h3><div style=\'display:flex;gap:10px;margin-bottom:12px;\'><div style=\'flex:1;\'><label style=\'font-size:11px;color:#94a3b8;display:block;margin-bottom:5px;font-weight:500;\'>LİMİT:</label><input type=\'number\' id=\'bm-limit\' value=\'50\' min=\'1\' style=\'width:100%;padding:8px;background:#0f172a;color:#e4e6eb;border:1px solid #334155;border-radius:8px;box-sizing:border-box;font-size:13px;outline:none;\'></div><div style=\'flex:1.5;\'><label style=\'font-size:11px;color:#94a3b8;display:block;margin-bottom:5px;font-weight:500;\'>HIZ:</label><select id=\'bm-hiz\' style=\'width:100%;padding:8px;background:#0f172a;color:#e4e6eb;border:1px solid #334155;border-radius:8px;box-sizing:border-box;font-size:13px;outline:none;\'><option value=\'yavas\'>Yavaş (3-7s)</option><option value=\'normal\' selected>Normal (2-4s)</option><option value=\'hizli\'>Hızlı (1-2s)</option><option value=\'cokhizli\'>Çok Hızlı</option></select></div></div><div id=\'bm-liste\' style=\'background:#0f172a;border:1px solid #334155;border-radius:8px;height:140px;overflow-y:auto;font-size:12px;padding:8px;margin-bottom:12px;color:#3b82f6;font-family:ui-monospace,SFMono-Regular,monospace;\'></div><button id=\'bm-baslat\' style=\'width:100%;padding:12px;background:#1877f2;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-bottom:8px;font-size:14px;box-shadow:0 4px 12px rgba(24,119,242,0.3);transition:all 0.2s;\'>🚀 Sistemi Başlat</button><button id=\'bm-durdur\' style=\'width:100%;padding:10px;background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;\'>Paneli Kapat</button><div id=\'bm-durum\' style=\'margin-top:10px;font-size:11px;text-align:center;color:#94a3b8;font-weight:500;\'>Sistem Hazır. Göreve başla!</div></div>';document.body.appendChild(ui);var style=document.createElement('style');style.innerHTML='#bm-baslat:hover{background:#166fe5;}#bm-baslat:active{transform:scale(0.97);}#bm-durdur:hover{background:#334155!important;color:#fff;}#bm-limit:focus,#bm-hiz:focus{border-color:#1877f2!important;box-shadow:0 0 0 2px rgba(24,119,242,0.2);}#bm-liste::-webkit-scrollbar{width:6px;}#bm-liste::-webkit-scrollbar-track{background:rgba(0,0,0,0.1);}#bm-liste::-webkit-scrollbar-thumb{background:#4e4f50;border-radius:4px;}';ui.appendChild(style);var aktif=false;var gonderilen=0;var durum=document.getElementById('bm-durum');var liste=document.getElementById('bm-liste');document.getElementById('bm-baslat').onclick=function(){if(aktif)return;var limit=parseInt(document.getElementById('bm-limit').value);if(isNaN(limit)||limit<=0){durum.innerText='Hata! Geçerli limit girin.';return;}aktif=true;durum.innerText='Çalışıyor... Lütfen sayfada kalın.';document.getElementById('bm-baslat').innerText='⏳ Çalışıyor...';adimAt(limit);};document.getElementById('bm-durdur').onclick=function(){aktif=false;if(document.getElementById('bm-panel')){document.body.removeChild(ui);}};function bulIsim(btn){try{var p=btn;while(p&&p.tagName!=='BODY'){p=p.parentElement;if(p&&p.querySelectorAll('img, image[role=&quot;img&quot;]').length>0&&p.querySelectorAll('div[role=&quot;button&quot;]').length<4){break;}}if(!p)p=btn.parentElement.parentElement;var imgs=p.querySelectorAll('image[role=&quot;img&quot;], img');for(var k=0;k<imgs.length;k++){var alt=imgs[k].getAttribute('aria-label')||imgs[k].getAttribute('alt');if(alt&&alt.length>2&&alt.toLowerCase().indexOf('arkadaş')===-1){return alt.replace(/adlı kullanıcının.*/i,'').replace(/profil resmi.*/i,'').trim();}}var els=p.querySelectorAll('a[role=&quot;link&quot;], span[dir=&quot;auto&quot;], h2, h3');for(var j=0;j<els.length;j++){var t=els[j].innerText?els[j].innerText.trim():'';if(t.length>2&&t.length<35&&t.indexOf('\\n')===-1){if(!t.match(/ortak|arkadaş|mutual|add|ekle|diğer|yaşıyor|şehir|ilinde|from|lives|kaldır|sil|remove|iptal|öneri|memleket|katıldı|okudu|çalışıyor/i)){return t;}}}return 'Bilinmeyen Kişi';}catch(e){return 'Bilinmeyen Kişi';}}function adimAt(limit){if(!aktif||gonderilen>=limit){durum.innerText=gonderilen>=limit?'İşlem Tamamlandı.':'Kullanıcı Durdurdu.';document.getElementById('bm-baslat').innerText='🚀 Sistemi Başlat';aktif=false;return;}var gercekButonlar=new Set();var tumElementler=document.querySelectorAll('div[role=&quot;button&quot;], span, a');for(var i=0;i<tumElementler.length;i++){var e=tumElementler[i];var txt=e.textContent?e.textContent.trim().toLowerCase():'';var aria=e.getAttribute('aria-label')?e.getAttribute('aria-label').toLowerCase().trim():'';if(txt==='arkadaşı ekle'||txt==='add friend'||aria==='arkadaşı ekle'||aria==='add friend'){var anaButon=e.closest('[role=&quot;button&quot;]')||e;if(!anaButon.hasAttribute('data-islem')&&anaButon.getBoundingClientRect().height>0){gercekButonlar.add(anaButon);}}}var btnListesi=Array.from(gercekButonlar);if(btnListesi.length===0){durum.innerText='Yeni kişiler aranıyor (Scroll)...';window.scrollTo(0,document.body.scrollHeight);var icKaydirma=document.querySelectorAll('div');for(var k=0;k<icKaydirma.length;k++){var stil=window.getComputedStyle(icKaydirma[k]);if(stil.overflowY==='auto'||stil.overflowY==='scroll'){icKaydirma[k].scrollTop=icKaydirma[k].scrollHeight;}}setTimeout(function(){adimAt(limit);},3000);return;}var hedef=btnListesi[0];var isim=bulIsim(hedef);hedef.setAttribute('data-islem','tamam');hedef.click();gonderilen++;liste.innerHTML+='<div style=\'padding:5px 0;border-bottom:1px solid #334155;display:flex;align-items:center;\'><span style=\'margin-right:6px;font-size:10px;\'>✅</span> '+gonderilen+'. '+isim+'</div>';liste.scrollTop=liste.scrollHeight;durum.innerText=gonderilen+' / '+limit+' gönderildi.';var hizSecim=document.getElementById('bm-hiz').value;var minBekle=2000,maxBekle=4000;if(hizSecim==='yavas'){minBekle=3000;maxBekle=7000;}else if(hizSecim==='hizli'){minBekle=1000;maxBekle=2000;}else if(hizSecim==='cokhizli'){minBekle=500;maxBekle=1500;}var bekle=Math.floor(Math.random()*(maxBekle-minBekle))+minBekle;setTimeout(function(){adimAt(limit);},bekle);}var isDragging=false;var offsetX,offsetY;var header=ui.querySelector('h3');header.addEventListener('mousedown',function(e){isDragging=true;header.style.cursor='grabbing';var rect=ui.getBoundingClientRect();offsetX=e.clientX-rect.left;offsetY=e.clientY-rect.top;ui.style.right='auto';ui.style.bottom='auto';ui.style.left=rect.left+'px';ui.style.top=rect.top+'px';});document.addEventListener('mousemove',function(e){if(!isDragging)return;ui.style.left=(e.clientX-offsetX)+'px';ui.style.top=(e.clientY-offsetY)+'px';});document.addEventListener('mouseup',function(){isDragging=false;header.style.cursor='grab';});})();" 
+                           class="relative inline-flex items-center justify-center gap-3 bg-slate-800/80 hover:bg-slate-700/80 text-white font-semibold py-4 px-8 rounded-full text-sm sm:text-base transition-colors z-10"
+                           onclick="showCustomToast('Bu butona tıklamayın! Farenizle basılı tutup tarayıcınızın <b>Yer İmleri (Sık Kullanılanlar)</b> çubuğuna sürükleyip bırakın.', 'warning'); return false;">
+                            <span class="text-xl">🦊</span>
+                            <span>FB Network Genişletici</span>
+                            <svg class="w-5 h-5 text-blue-400 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                        </a>
+                    </div>
+                    
+                    <!-- Instructions -->
+                    <div class="space-y-2 mt-4 text-center">
+                        <p class="text-slate-300 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+                            Üstteki butonu farenizle tutup tarayıcınızın <span class="font-bold text-white border-b border-blue-500/50 pb-0.5">Yer İmleri Çubuğuna</span> sürükleyip bırakın.
+                        </p>
+                        <p class="text-slate-400 text-xs sm:text-sm">
+                            Daha sonra Facebook'a girin ve kaydettiğiniz bu yer imine tıklayın.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex items-center py-6">
+                <div class="flex-grow border-t border-slate-700/50"></div>
+                <span class="flex-shrink-0 mx-4 text-slate-500 text-xs font-semibold tracking-widest uppercase">Veya Alternatif Kurulum</span>
+                <div class="flex-grow border-t border-slate-700/50"></div>
+            </div>
+
+            <div class="text-center mt-6">
+                
+                <button onclick="copyCode()" id="copyBtn" class="group relative inline-flex items-center justify-center gap-3 bg-fb-blue hover:bg-fb-hover text-white font-bold py-4 px-10 rounded-2xl mb-10 text-sm sm:text-[15px] tracking-wide transition-all duration-300 transform hover:-translate-y-1 shadow-[0_0_30px_-5px_rgba(24,119,242,0.4)] hover:shadow-[0_0_40px_5px_rgba(24,119,242,0.6)] overflow-hidden">
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                    <svg id="copyIcon" class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <span id="copyText" class="relative z-10">KODU KOPYALA</span>
+                </button>
+
+                <!-- Steps Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div class="glass-step rounded-2xl p-5 sm:p-6 flex flex-col items-center text-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(59,130,246,0.2)]">1</div>
+                        <p class="text-[13px] sm:text-[14px] text-slate-300 leading-relaxed">Yukarıdaki butona basarak <strong class="text-white">kodu hafızaya</strong> alın.</p>
+                    </div>
+                    <div class="glass-step rounded-2xl p-5 sm:p-6 flex flex-col items-center text-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(59,130,246,0.2)]">2</div>
+                        <p class="text-[13px] sm:text-[14px] text-slate-300 leading-relaxed">Facebook sayfasına gidin ve <strong class="text-white">F12</strong> tuşu ile geliştirici konsolunu açın.</p>
+                    </div>
+                    <div class="glass-step rounded-2xl p-5 sm:p-6 flex flex-col items-center text-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(59,130,246,0.2)]">3</div>
+                        <p class="text-[13px] sm:text-[14px] text-slate-300 leading-relaxed">Kodu yapıştırıp <strong class="text-white">(CTRL+V)</strong> ardından <strong class="text-white">Enter'a</strong> basın.</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- NASIL KULLANILIR SECTION -->
+        <div class="glass-card rounded-[2rem] w-full p-6 sm:p-10 lg:p-12">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold tracking-[0.2em] mb-4">
+                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    KULLANIM REHBERİ
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">Nasıl Kullanılır?</h2>
+                <p class="text-slate-400 text-sm sm:text-base">Aracı Facebook üzerinde çalıştırmak çok basittir. Adımları takip edin:</p>
+            </div>
+
+            <div class="space-y-6 sm:space-y-8">
+                <!-- Step 1 -->
+                <div class="flex gap-4 sm:gap-6 items-start">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold text-lg sm:text-xl shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">1</div>
+                    <div class="pt-1">
+                        <h4 class="text-white font-semibold text-base sm:text-lg mb-1">Doğru Sayfaya Gidin</h4>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">Facebook hesabınıza giriş yapın. Ardından arkadaş eklemek istediğiniz bir gruba, sayfaya veya <strong>"Önerilen Arkadaşlar"</strong> listesine gidin.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="flex gap-4 sm:gap-6 items-start">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold text-lg sm:text-xl shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">2</div>
+                    <div class="pt-1">
+                        <h4 class="text-white font-semibold text-base sm:text-lg mb-1">Aracı Çalıştırın</h4>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">Yer imlerine eklediğiniz <strong>"🦊 FB Network Genişletici"</strong> butonuna tıklayın (Veya F12 konsoluna kodu yapıştırıp Enter'a basın). Aracın kontrol paneli ekranda açılacaktır.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex gap-4 sm:gap-6 items-start">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold text-lg sm:text-xl shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">3</div>
+                    <div class="pt-1">
+                        <h4 class="text-white font-semibold text-base sm:text-lg mb-1">Ayarları Yapın ve Başlatın</h4>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">Panelden eklemek istediğiniz kişi sayısını (LİMİT) ve ekleme hızını seçin. Ardından <strong>"🚀 Sistemi Başlat"</strong> butonuna tıklayın ve arkanıza yaslanın!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm leading-relaxed flex gap-3 items-start">
+                <svg class="w-5 h-5 shrink-0 text-amber-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <p><strong>Önemli Not:</strong> Facebook'un spam algılamaması için hızı genellikle "Normal" veya "Yavaş" tutmanız ve günlük limitleri aşmamanız önerilir.</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <p class="text-slate-500 text-xs text-center pb-6 font-medium">
+            © 2026 Efekan Erdoğan. Tüm hakları saklıdır.
+        </p>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center p-4 w-full max-w-xs sm:max-w-md text-slate-200 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 pointer-events-none">
+        <div id="toastIconContainer" class="inline-flex items-center justify-center shrink-0 w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400">
+            <!-- Icon changes dynamically -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <div id="toastMessage" class="ms-3 text-sm font-medium leading-relaxed"></div>
+    </div>
+
+    <script>
+        // Custom Toast Function (replaces standard browser alert)
+        let toastTimeout;
+        function showCustomToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const iconContainer = document.getElementById('toastIconContainer');
+            
+            toastMessage.innerHTML = message;
+            
+            // Set styles based on type
+            if(type === 'success') {
+                iconContainer.className = 'inline-flex items-center justify-center shrink-0 w-10 h-10 rounded-xl bg-green-500/20 text-green-400';
+                iconContainer.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            } else if(type === 'warning') {
+                iconContainer.className = 'inline-flex items-center justify-center shrink-0 w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400';
+                iconContainer.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+            } else {
+                iconContainer.className = 'inline-flex items-center justify-center shrink-0 w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400';
+                iconContainer.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            }
+
+            // Show
+            toast.classList.add('show');
+            
+            // Auto hide
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Copy Code Functionality
+        function copyCode() {
+            const btn = document.getElementById('bookmarklet-btn');
+            // Decode the href safely to maintain exact bookmarklet logic
+            const code = btn.getAttribute('href');
+            
+            const copyBtn = document.getElementById('copyBtn');
+            const copyText = document.getElementById('copyText');
+            const copyIcon = document.getElementById('copyIcon');
+            
+            const originalText = copyText.innerText;
+            const originalIcon = copyIcon.outerHTML;
+            
+            // We use standard clipboard writeText fallback
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(handleSuccess).catch(err => {
+                    fallbackCopyTextToClipboard(code);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code);
+            }
+
+            function handleSuccess() {
+                // UI Changes for success
+                copyText.innerText = 'KOPYALANDI!';
+                copyIcon.outerHTML = '<svg id="copyIcon" class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                
+                // Change button color to green temporarily
+                copyBtn.classList.remove('bg-fb-blue', 'hover:bg-fb-hover', 'shadow-[0_0_30px_-5px_rgba(24,119,242,0.4)]');
+                copyBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'shadow-[0_0_30px_-5px_rgba(22,163,74,0.4)]');
+                
+                showCustomToast('Kod başarıyla panoya kopyalandı! Şimdi Facebook sekmesinde konsola yapıştırabilirsiniz.', 'success');
+                
+                setTimeout(() => {
+                    copyText.innerText = originalText;
+                    document.getElementById('copyIcon').outerHTML = originalIcon;
+                    copyBtn.classList.add('bg-fb-blue', 'hover:bg-fb-hover', 'shadow-[0_0_30px_-5px_rgba(24,119,242,0.4)]');
+                    copyBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'shadow-[0_0_30px_-5px_rgba(22,163,74,0.4)]');
+                }, 2500);
+            }
+        }
+
+        // Fallback for older browsers or non-secure contexts
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                if(successful) {
+                    // Manually trigger the success visuals
+                    document.getElementById('copyBtn').click(); 
+                } else {
+                    showCustomToast('Kopyalama başarısız oldu. Lütfen manuel olarak kopyalayın.', 'warning');
+                }
+            } catch (err) {
+                showCustomToast('Kopyalama başarısız oldu: ' + err, 'warning');
+            }
+
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>
